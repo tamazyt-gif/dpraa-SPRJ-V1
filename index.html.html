@@ -1,0 +1,649 @@
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GAS-V1</title>
+<style>
+/* ===== Style tetap sama seperti versi asli kamu ===== */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:2em; background:linear-gradient(135deg,#c0d8f8,#e1edfc); color:#333; display:flex; flex-direction:column; align-items:center; min-height:100vh; overflow-y:auto; position:relative; scroll-behavior:smooth;}
+body::before,body::after{content:"";position:absolute;width:200%;height:200%;top:-50%;left:-50%;background:radial-gradient(circle at center,#c0d8f8 0%,#e1edfc 100%);opacity:.6;border-radius:45%;animation:waveMove 30s linear infinite; z-index:-1;}
+body::after{animation-duration:45s;opacity:.4;border-radius:50%;}
+@keyframes waveMove{0%{transform:rotate(0deg) translate(0,0);}50%{transform:rotate(180deg) translate(50px,50px);}100%{transform:rotate(360deg) translate(0,0);}}
+h1{text-align:center; margin-bottom:.2em;color:#2c3e50; text-shadow:1px 1px 2px rgba(255,255,255,.8);}
+.sponsored{text-align:center;margin-top:-.2em;margin-bottom:1.5em;font-size:14px;font-style:italic;color:rgba(0,0,0,.5);}
+.form-container{width:100%;max-width:600px;margin:2em 0;background:rgba(255,255,255,.7);backdrop-filter:blur(14px);padding:2em;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.6);position:relative;z-index:1;}
+label{display:block;margin-top:1em;font-weight:bold;color:#34495e;}
+input[type="text"]{width:100%;padding:.7em;font-size:1em;margin-top:.5em;box-sizing:border-box;border:2px solid #2961ac;border-radius:8px;background:rgba(255,255,255,.65);backdrop-filter:blur(8px);transition:border-color .3s,box-shadow .3s;}
+input[type="text"]:focus{border-color:#2961ac;box-shadow:0 0 8px rgba(41,97,172,.5), 0 0 15px rgba(41,97,172,.3);outline:none;}
+button{margin-top:1.5em;width:100%;padding:.8em;font-size:1em;cursor:pointer;color:white;border:none;border-radius:12px;font-weight:bold;background:linear-gradient(-45deg,#2961ac,#23407c);background-size:400% 400%;animation:gradientAnimation 5s ease infinite;box-shadow:0 0 12px rgba(33,64,124,.8),0 0 25px rgba(41,97,172,.6) inset;transition:transform .3s,box-shadow .3s;}
+button:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(33,64,124,1),0 0 35px rgba(41,97,172,.8) inset;}
+@keyframes gradientAnimation{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+#result{margin-top:2em;background:rgba(255,255,255,.7);padding:1.5em;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.12);overflow-x:auto;backdrop-filter:blur(10px);position:relative; z-index:1; width:100%; max-width:1400px; min-width: 90%;}
+table{width:100%;border-collapse:collapse;margin-top:1em;background:rgba(255,255,255,.5);border-radius:8px;overflow:hidden;table-layout: fixed; border: 2px solid #2961ac;}
+th,td{border:1px solid #ddd;padding:16px;text-align:center;vertical-align:middle;transition:background-color .3s;word-wrap: break-word; min-height: 20px;}
+th{background-color:rgba(41,97,172,.8);color:white;font-weight:bold;position:sticky;top:0;backdrop-filter:blur(8px);text-shadow:1px 1px 2px rgba(0,0,0,.3); font-size: 14px; border: 1px solid #1a4a8a;}
+tr:nth-child(even){background-color:rgba(255,255,255,.4);}
+tr:hover{background-color:rgba(255,255,255,.6);}
+.status-missing-agent{background-color:#ffebee!important;color:#c62828;}
+.status-missing-doc{background-color:#fff9c4!important;color:#f57f17;}
+.status-nominal-tidak-cocok{background-color:#ffccbc!important;color:#e64a19;}
+.status-matched-by-name{background-color:#e1f5fe!important;color:#0277bd;}
+.loading{text-align:center;margin-top:1em;display:none;}
+.spinner{border:4px solid #f3f3f3;border-top:4px solid #3498db;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin:0 auto;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.notification{padding:1em;margin-top:1em;border-radius:8px;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,.1);transition:all .3s ease;}
+.notification.success{background-color:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+.notification.error{background-color:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+.notification.center{text-align: center; display: block; margin: 2em auto; max-width: 80%; font-size: 1.1em; padding: 1.2em;}
+#backToTop{position:fixed;bottom:40px;right:40px;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #2961ac, #23407c);color:#fff;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,.3);z-index:10;transition:all .3s ease;border:none;font-size:20px;opacity:0;visibility:hidden;transform:scale(0.8);}
+#backToTop:hover{background:linear-gradient(135deg, #3498db, #2980b9);transform:scale(1.1);box-shadow:0 6px 20px rgba(41, 97, 172, 0.6);}
+#backToTop.show{opacity:1;visibility:visible;transform:scale(1);}
+.stats-container{display:flex;justify-content:space-around;margin:1.5em 0;flex-wrap:wrap;}
+.stat-box{background:rgba(255,255,255,.7);padding:1em;border-radius:10px;text-align:center;min-width:120px;margin:.5em;box-shadow:0 4px 12px rgba(0,0,0,.1);}
+.stat-value{font-size:1.8em;font-weight:bold;color:#2961ac;}
+.stat-label{font-size:.9em;color:#555;margin-top:.3em;}
+.confidence-bar{height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;margin-top:6px;}
+.confidence-fill{height:100%;background:linear-gradient(90deg,#4caf50,#8bc34a);border-radius:4px;transition:width .5s ease;}
+#paginationControls{margin-top:1.5em;text-align:center;}
+#paginationControls button{background-color:#2961ac;color:white;border:none;margin:0 4px;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:bold;transition:all .3s ease;box-shadow:0 2px 5px rgba(0,0,0,.2);}
+#paginationControls button:hover:not(:disabled){background-color:#23407c;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,.3);}
+#paginationControls button:disabled{background-color:#cccccc;cursor:not-allowed;opacity:.6;}
+.mailbox{background:#fff7e6;padding:12px;border-radius:10px;border:1px solid #f0d9b5;margin-bottom:16px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.mailbox-header{cursor:pointer;font-weight:bold;display:flex;justify-content:space-between;align-items:center;padding:8px 0;color:#856404;}
+.mailbox-items{display:none;margin-top:12px;padding:8px;background:rgba(255,255,255,.6);border-radius:8px;}
+.mailbox-items div{padding:8px 0;border-bottom:1px dashed #f0d9b5;}
+.mailbox-items div:last-child{border-bottom:none;}
+.badge{display:inline-block;padding:.3em .6em;border-radius:6px;font-weight:bold;font-size:12px;margin-right:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);}
+.badge.warn{background:#fff3cd;color:#856404;border:1px solid #ffeaa7;}
+/* Style baru untuk tombol Missing AGENT dan Missing Doc */
+.jump-button {
+  padding: 0.5em 1em;
+  font-size: 0.9em;
+  margin-top: 0.5em;
+  width: auto;
+  background: linear-gradient(-45deg, #e74c3c, #c0392b);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+  transition: all 0.3s ease;
+}
+.jump-button:hover {
+  background: linear-gradient(-45deg, #c0392b, #a93226);
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.9);
+  transform: translateY(-2px);
+}
+.jump-button.doc {
+  background: linear-gradient(-45deg, #f39c12, #d68910);
+  box-shadow: 0 0 10px rgba(243, 156, 18, 0.7);
+}
+.jump-button.doc:hover {
+  background: linear-gradient(-45deg, #d68910, #b9770e);
+  box-shadow: 0 0 20px rgba(243, 156, 18, 0.9);
+}
+.highlight-row-agent {
+  animation: highlightAgent 3s ease-in-out;
+  position: relative;
+}
+.highlight-row-doc {
+  animation: highlightDoc 3s ease-in-out;
+  position: relative;
+}
+@keyframes highlightAgent {
+  0% { 
+    background-color: #ffebee;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.8);
+    border-left: 5px solid #e74c3c;
+  }
+  20% { 
+    background-color: #ffcdd2;
+    box-shadow: 0 0 25px rgba(231, 76, 60, 1);
+    border-left: 5px solid #c0392b;
+  }
+  80% { 
+    background-color: #ffcdd2;
+    box-shadow: 0 0 25px rgba(231, 76, 60, 1);
+    border-left: 5px solid #c0392b;
+  }
+  100% { 
+    background-color: #ffebee;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.8);
+    border-left: 5px solid #e74c3c;
+  }
+}
+@keyframes highlightDoc {
+  0% { 
+    background-color: #fff9c4;
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.8);
+    border-left: 5px solid #f39c12;
+  }
+  20% { 
+    background-color: #fff59d;
+    box-shadow: 0 0 25px rgba(243, 156, 18, 1);
+    border-left: 5px solid #d68910;
+  }
+  80% { 
+    background-color: #fff59d;
+    box-shadow: 0 0 25px rgba(243, 156, 18, 1);
+    border-left: 5px solid #d68910;
+  }
+  100% { 
+    background-color: #fff9c4;
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.8);
+    border-left: 5px solid #f39c12;
+  }
+}
+/* Style untuk user ID yang bisa di-copy */
+.copyable {
+  cursor: pointer;
+  position: relative;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+.copyable:hover {
+  background-color: rgba(41, 97, 172, 0.1);
+}
+.copy-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.copyable:hover .copy-tooltip {
+  opacity: 1;
+}
+.copy-feedback {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+  display: none; /* Menyembunyikan elemen secara default */
+}
+.copy-feedback.show {
+  opacity: 1;
+  transform: translateY(0);
+  display: block; /* Menampilkan elemen saat class show ditambahkan */
+}
+@media(max-width:768px){body{padding:1em}.form-container{padding:1.5em}h1{font-size:1.8em}table{font-size:.9em}th,td{padding:8px}#result{width:100%}}
+/* ===== Style untuk animasi opening ===== */
+.intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #2961ac, #23407c);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transform-origin: center center;
+}
+.intro-content {
+  text-align: center;
+  color: white;
+  animation: introAnimation 3s ease-in-out;
+  position: relative;
+  z-index: 10;
+}
+.intro-logo {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: logoFadeIn 1s ease-in-out 0.5s forwards;
+}
+.intro-subtitle {
+  font-size: 1.2rem;
+  opacity: 0;
+  animation: subtitleFadeIn 1s ease-in-out 1.5s forwards;
+}
+/* Style untuk tombol Next yang lebih modern dan pendek */
+.next-button {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(-45deg, #3498db, #2980b9);
+  background-size: 400% 400%;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: gradientAnimation 5s ease infinite, buttonPulse 2s infinite, buttonFadeIn 1s ease-in-out 2.5s forwards;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-top: 2rem;
+  opacity: 0;
+  width: auto;
+  min-width: 120px;
+}
+.next-button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.7s ease;
+}
+.next-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+}
+.next-button:hover:before {
+  left: 100%;
+}
+@keyframes introAnimation {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes logoFadeIn {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes subtitleFadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes buttonFadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes buttonPulse {
+  0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(52, 152, 219, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+@keyframes smoothZoomOut {
+  0% { 
+    transform: scale(1); 
+    opacity: 1; 
+    filter: blur(0px) brightness(1);
+    border-radius: 0;
+  }
+  20% { 
+    transform: scale(1.3); 
+    opacity: 0.9; 
+    filter: blur(5px) brightness(1.1);
+    border-radius: 15px;
+  }
+  40% { 
+    transform: scale(1.7); 
+    opacity: 0.7; 
+    filter: blur(12px) brightness(1.2);
+    border-radius: 25px;
+  }
+  60% { 
+    transform: scale(2.1); 
+    opacity: 0.5; 
+    filter: blur(20px) brightness(1.3);
+    border-radius: 35px;
+  }
+  80% { 
+    transform: scale(2.5); 
+    opacity: 0.2; 
+    filter: blur(30px) brightness(1.4);
+    border-radius: 45px;
+  }
+  100% { 
+    transform: scale(3); 
+    opacity: 0; 
+    filter: blur(40px) brightness(1.5);
+    border-radius: 50%;
+    visibility: hidden;
+  }
+}
+@keyframes textFadeOut {
+  0% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  100% { 
+    opacity: 0; 
+    transform: scale(0.8);
+    visibility: hidden;
+  }
+}
+/* Menyembunyikan konten utama saat intro aktif */
+body.intro-active > *:not(.intro-overlay) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+body.intro-complete > *:not(.intro-overlay) {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Style untuk form container saat disembunyikan */
+.form-container.hidden {
+  display: none;
+}
+/* Style untuk particle effect canvas */
+#particles-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  opacity: 0.8;
+}
+/* Optimasi tombol submit */
+#submitBtn {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+</style>
+</head>
+<body>
+<!-- Animasi Opening -->
+<div class="intro-overlay" id="introOverlay">
+  <canvas id="particles-canvas"></canvas>
+  <div class="intro-content">
+    <div class="intro-logo" id="introLogo">Hi, Maestro!</div>
+    <div class="intro-subtitle" id="introSubtitle">let's explore Weddy's creations here.</div>
+    <button class="next-button" id="nextButton">NEXT</button>
+  </div>
+</div>
+<h1>Wddy GAS-V1</h1>
+<p class="sponsored">Sponsored by DYP Ltd. Co.</p>
+<div class="form-container hidden" id="formContainer">
+  <label for="token">Token Rahasia:</label>
+  <input type="text" id="token" placeholder="Masukkan token" />
+  <label for="sheetId">ID Spreadsheet:</label>
+  <input type="text" id="sheetId" placeholder="Masukkan ID spreadsheet" />
+  <button id="submitBtn">Kirim dan Proses Data</button>
+  <div class="loading" id="loading"><div class="spinner"></div><p>Memproses data... Mohon tunggu.</p></div>
+</div>
+<div id="result"></div>
+<button id="backToTop" title="Kembali ke atas">↑</button>
+<!-- Elemen untuk feedback copy -->
+<div id="copyFeedback" class="copy-feedback">Tersalin ke clipboard!</div>
+<script>
+let currentPage=1; const rowsPerPage=15; let currentData=[]; let mailboxData=[];
+// Notification
+function showNotification(msg,type='success'){const el=document.createElement('div');el.className=`notification ${type==='error'?'error':'success'}`;el.textContent=msg;document.querySelector('.form-container').appendChild(el);setTimeout(()=>el.remove(),6000);}
+// Format number
+function formatNumber(v){const n=Number(v); if(isNaN(n)) return v===0?'0':(v||''); return new Intl.NumberFormat('id-ID',{maximumFractionDigits:0}).format(n);}
+// Fungsi untuk menyalin teks ke clipboard
+function copyToClipboard(text) {
+  // Membuat elemen textarea sementara
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed'; // Menghindari scroll ke bawah
+  textarea.style.opacity = '0'; // Menyembunyikan elemen
+  
+  document.body.appendChild(textarea);
+  textarea.select();
+  
+  try {
+    // Menyalin teks ke clipboard
+    const successful = document.execCommand('copy');
+    
+    // Menampilkan feedback hanya jika berhasil
+    if (successful) {
+      const feedback = document.getElementById('copyFeedback');
+      feedback.textContent = 'Tersalin ke clipboard!';
+      feedback.style.backgroundColor = '#4caf50';
+      feedback.classList.add('show');
+      
+      // Menyembunyikan feedback setelah 2 detik
+      setTimeout(() => {
+        feedback.classList.remove('show');
+      }, 2000);
+    }
+    
+    return successful;
+  } catch (err) {
+    console.error('Gagal menyalin teks: ', err);
+    return false;
+  } finally {
+    // Menghapus elemen textarea
+    document.body.removeChild(textarea);
+  }
+}
+// Render stats
+function renderStats(){const resDiv=document.getElementById('result');const statsContainer=document.createElement('div');statsContainer.className='stats-container';const total=currentData.length;const missingAgent=currentData.filter(r=>r.status && r.status.includes('MISSING_IN_AGENT')).length;const missingDoc=currentData.filter(r=>r.status && r.status.includes('MISSING_IN_DOC')).length;const nominalMismatch=currentData.filter(r=>r.status && r.status.includes('NOMINAL')).length;const matched=total-missingAgent-missingDoc-nominalMismatch;statsContainer.innerHTML=`<div class="stat-box"><div class="stat-value">${total}</div><div class="stat-label">Total Data</div></div><div class="stat-box"><div class="stat-value">${matched}</div><div class="stat-label">Matched</div></div><div class="stat-box"><div class="stat-value">${missingAgent}</div><div class="stat-label">Missing AGENT</div>${missingAgent > 0 ? '<button class="jump-button" onclick="jumpToFirstMissing(\'agent\')">Lihat Data</button>' : ''}</div><div class="stat-box"><div class="stat-value">${missingDoc}</div><div class="stat-label">Missing DOC</div>${missingDoc > 0 ? '<button class="jump-button doc" onclick="jumpToFirstMissing(\'doc\')">Lihat Data</button>' : ''}</div><div class="stat-box"><div class="stat-value">${nominalMismatch}</div><div class="stat-label">Nominal Mismatch</div></div>`;resDiv.appendChild(statsContainer);}
+// Parse row
+function parseRow(r){return{agentRow:r.agentRow||'',docRow:r.docRow||'',rekAgent:r.rekAgent||'',rekDoc:r.rekDoc||'',username:r.username||'',nominalAgent:r.nominalAgent||'',nominalDoc:r.nominalDoc||'',status:r.status||'',note:r.note||'',confidence:r.confidence||null};}
+// Render table page
+function renderTablePage(page, highlightRowIdx = -1, highlightType = ''){const resDiv=document.getElementById('result');resDiv.innerHTML='';renderStats();if(mailboxData.length){const mb=document.createElement('div');mb.className='mailbox';const header=document.createElement('div');header.className='mailbox-header';header.innerHTML=`<span><span class="badge warn">MAILBOX</span> ${mailboxData.length} warning/notice</span><span>▼</span>`;const items=document.createElement('div');items.className='mailbox-items';mailboxData.forEach(it=>{const div=document.createElement('div');const parts=[];if(it.sheet) parts.push(`<strong>${it.sheet}</strong>`);if(it.agentRow||it.docRow) parts.push(`row AGT:${it.agentRow||'-'} / DOC:${it.docRow||'-'}`);if(it.username) parts.push(`user:<span class="copyable" onclick="copyToClipboard('${it.username}')">${it.username}<span class="copy-tooltip">Klik untuk salin</span></span>`);if(typeof it.nominal!=='undefined') parts.push(`nominal:${formatNumber(it.nominal)}`);div.innerHTML=parts.join(' • ')+(it.reason?` <span style="color:#6b4b00">${it.reason}</span>`:'');items.appendChild(div);});header.addEventListener('click',()=>{const v=items.style.display==='block';items.style.display=v?'none':'block';header.querySelector('span:last-child').textContent=v?'▼':'▲';});mb.appendChild(header);mb.appendChild(items);resDiv.appendChild(mb);}
+const start=(page-1)*rowsPerPage,end=start+rowsPerPage,pageData=currentData.slice(start,end);if(pageData.length===0){const noDataMsg=document.createElement('div');noDataMsg.className='notification success center';noDataMsg.textContent='Tidak ada data pada halaman ini.';resDiv.appendChild(noDataMsg);return;}
+const table=document.createElement('table');
+// Mengatur lebar kolom yang lebih luas
+table.innerHTML = `
+  <colgroup>
+    <col style="width: 7%">
+    <col style="width: 7%">
+    <col style="width: 14%">
+    <col style="width: 14%">
+    <col style="width: 11%">
+    <col style="width: 11%">
+    <col style="width: 11%">
+    <col style="width: 9%">
+    <col style="width: 9%">
+    <col style="width: 17%">
+  </colgroup>
+`;
+const headers=['Row AGENT','Row DOC','Rek AGENT','Rek DOC','Username','Nominal AGENT','Nominal DOC','Confidence','STATUS','Catatan'];const trh=document.createElement('tr');headers.forEach(h=>{const th=document.createElement('th');th.textContent=h;trh.appendChild(th);});table.appendChild(trh);
+pageData.forEach((rawRow, idx) =>{const parsed=parseRow(rawRow);const tr=document.createElement('tr');const cells=[parsed.agentRow,parsed.docRow,parsed.rekAgent,parsed.rekDoc,parsed.username,parsed.nominalAgent!=null?formatNumber(parsed.nominalAgent):'',parsed.nominalDoc!=null?formatNumber(parsed.nominalDoc):''];let confidenceCell='';if(parsed.confidence!==null && parsed.confidence!==undefined){confidenceCell=`<div>${Math.round(parsed.confidence)}%</div><div class="confidence-bar"><div class="confidence-fill" style="width:${parsed.confidence}%"></div></div>`;}else{confidenceCell='-';}cells.push(confidenceCell,parsed.status,parsed.note);cells.forEach(c=>{const td=document.createElement('td');td.innerHTML=c;tr.appendChild(td);});const s=(parsed.status||'').toUpperCase();if(s.includes('MISSING_IN_DOC')) tr.classList.add('status-missing-agent');else if(s.includes('MISSING_IN_AGENT')) tr.classList.add('status-missing-doc');else if(s.includes('NOMINAL')) tr.classList.add('status-nominal-tidak-cocok');else if(s.includes('MATCHED')) tr.classList.add('status-matched-by-name');table.appendChild(tr);
+// Menambahkan highlight ke baris yang dimaksud
+if (highlightRowIdx >= 0 && idx === highlightRowIdx) {
+  if (highlightType === 'agent') {
+    tr.classList.add('highlight-row-agent');
+  } else if (highlightType === 'doc') {
+    tr.classList.add('highlight-row-doc');
+  }
+}
+});
+resDiv.appendChild(table);renderPaginationControls(page);
+// Scroll ke tabel setelah render
+if (highlightRowIdx >= 0) {
+  setTimeout(() => {
+    table.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+}
+// Pagination
+function renderPaginationControls(currentPage){const resDiv=document.getElementById('result');const old=document.getElementById('paginationControls');if(old) old.remove();const totalPages=Math.ceil(currentData.length/rowsPerPage);if(totalPages<=1) return;const div=document.createElement('div');div.id='paginationControls';div.style.marginTop='1em';div.style.textAlign='center';const prev=document.createElement('button');prev.textContent='◀ Prev';prev.disabled=currentPage===1;prev.onclick=()=>{if(currentPage>1){currentPage--;renderTablePage(currentPage);}};div.appendChild(prev);const maxBtns=7;let startPage=Math.max(1,currentPage-Math.floor(maxBtns/2)),endPage=startPage+maxBtns-1;if(endPage>totalPages){endPage=totalPages;startPage=Math.max(1,endPage-maxBtns+1);}for(let i=startPage;i<=endPage;i++){const btn=document.createElement('button');btn.textContent=i;btn.style.fontWeight=i===currentPage?'bold':'normal';btn.style.backgroundColor=i===currentPage?'#23407c':'#2961ac';btn.onclick=()=>{currentPage=i;renderTablePage(currentPage);};div.appendChild(btn);}const next=document.createElement('button');next.textContent='Next ▶';next.disabled=currentPage===totalPages;next.onclick=()=>{if(currentPage<totalPages){currentPage++;renderTablePage(currentPage);}};div.appendChild(next);resDiv.appendChild(div);}
+// Fungsi untuk melompat ke data pertama dengan status tertentu
+function jumpToFirstMissing(type) {
+  if (currentData.length === 0) return;
+  
+  let statusToFind = '';
+  if (type === 'agent') {
+    statusToFind = 'MISSING_IN_AGENT';
+  } else if (type === 'doc') {
+    statusToFind = 'MISSING_IN_DOC';
+  }
+  
+  // Mencari data pertama dengan status yang sesuai
+  let foundIndex = -1;
+  for (let i = 0; i < currentData.length; i++) {
+    if (currentData[i].status && currentData[i].status.includes(statusToFind)) {
+      foundIndex = i;
+      break;
+    }
+  }
+  
+  if (foundIndex === -1) {
+    showNotification(`Tidak ada data dengan status ${statusToFind}`, 'error');
+    return;
+  }
+  
+  // Menghitung halaman di mana data berada
+  const targetPage = Math.floor(foundIndex / rowsPerPage) + 1;
+  const rowIdxInPage = foundIndex % rowsPerPage;
+  
+  // Mengubah halaman dan menampilkan data dengan highlight
+  currentPage = targetPage;
+  renderTablePage(currentPage, rowIdxInPage, type);
+}
+// Submit
+document.getElementById('submitBtn').addEventListener('click',async()=>{
+  const token=document.getElementById('token').value.trim();
+  const sheetId=document.getElementById('sheetId').value.trim();
+  const resDiv=document.getElementById('result');
+  const loading=document.getElementById('loading'); 
+  resDiv.innerHTML='';
+  if(!token){showNotification('Token wajib diisi!','error'); return;}
+  if(!sheetId){showNotification('ID Spreadsheet wajib diisi!','error'); return;}
+  loading.style.display='block';
+  try{
+    const url=`https://script.google.com/macros/s/AKfycbwzh-d1h7Nh0Mjt1PMN854VBrNWr6XpOp3E61NhzeKXCqLx74IFN9L5oGnKxtWKDNDd6Q/exec?token=${encodeURIComponent(token)}&sheetId=${encodeURIComponent(sheetId)}`;
+    const resp=await fetch(url,{method:'GET',mode:'cors'});
+    if(!resp.ok) throw new Error('HTTP error: '+resp.status);
+    const data=await resp.json();
+    loading.style.display='none';
+    if(data.error){showNotification('Terjadi kesalahan: '+data.error,'error'); return;}
+    currentData=Array.isArray(data.results)?data.results:[]; 
+    mailboxData=Array.isArray(data.mailbox)?data.mailbox:[]; 
+    currentPage=1;
+    if(currentData.length===0){
+      const noDataMsg=document.createElement('div');
+      noDataMsg.className='notification success center';
+      noDataMsg.textContent='Tidak ada masalah. Semua data valid.';
+      resDiv.appendChild(noDataMsg);
+      return;
+    }
+    renderTablePage(currentPage);
+    showNotification(`Ditemukan ${currentData.length} baris bermasalah${mailboxData.length?(' + '+mailboxData.length+' mailbox') : ''}`, 'error');
+  }catch(err){loading.style.display='none'; showNotification('Terjadi kesalahan: '+err.message,'error'); console.error(err);}
+});
+// Back to top
+const backToTopBtn=document.getElementById('backToTop'); window.addEventListener('scroll',()=>{if(window.scrollY>300){backToTopBtn.classList.add('show');}else{backToTopBtn.classList.remove('show');}}); backToTopBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+// Particle effect
+function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  // Set canvas size
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  // Create particles
+  const particles = [];
+  const particleCount = 60; // Ditingkatkan dari 30 menjadi 60
+  
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2.5 + 0.5, // Diperbesar dari 0.5-2 menjadi 0.5-3
+      speedX: (Math.random() - 0.5) * 0.6, // Dipercepat sedikit
+      speedY: (Math.random() - 0.5) * 0.6,
+      opacity: Math.random() * 0.4 + 0.2, // Ditingkatkan opacity dari 0.05-0.25 menjadi 0.2-0.6
+      color: `rgba(255, 255, 255, ${Math.random() * 0.4 + 0.2})` // Warna dengan opacity lebih tinggi
+    });
+  }
+  
+  // Animation function
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    particles.forEach(particle => {
+      // Update position
+      particle.x += particle.speedX;
+      particle.y += particle.speedY;
+      
+      // Reset particles that move off screen
+      if (particle.x < 0 || particle.x > canvas.width || 
+          particle.y < 0 || particle.y > canvas.height) {
+        particle.x = Math.random() * canvas.width;
+        particle.y = Math.random() * canvas.height;
+      }
+      
+      // Draw particle with glow effect
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      
+      // Create gradient for glow effect
+      const gradient = ctx.createRadialGradient(
+        particle.x, particle.y, 0,
+        particle.x, particle.y, particle.radius * 3
+      );
+      gradient.addColorStop(0, particle.color);
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Draw core particle
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
+      ctx.fill();
+    });
+    
+    requestAnimationFrame(animateParticles);
+  }
+  
+  animateParticles();
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
+
+// Intro animation dan tombol next
+document.addEventListener('DOMContentLoaded', function() {
+  // Menambahkan class untuk menyembunyikan konten saat intro aktif
+  document.body.classList.add('intro-active');
+  
+  // Inisialisasi particle effect
+  initParticles();
+  
+  // Event listener untuk tombol next
+  document.getElementById('nextButton').addEventListener('click', function() {
+    // Menyembunyikan overlay intro dengan animasi zoom out halus dengan blur zoom
+    const introOverlay = document.getElementById('introOverlay');
+    introOverlay.style.animation = 'smoothZoomOut 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+    
+    // Animasi fade out untuk text
+    const introLogo = document.getElementById('introLogo');
+    const introSubtitle = document.getElementById('introSubtitle');
+    const nextButton = document.getElementById('nextButton');
+    
+    introLogo.style.animation = 'textFadeOut 0.3s ease-in-out forwards';
+    introSubtitle.style.animation = 'textFadeOut 0.3s ease-in-out forwards';
+    nextButton.style.animation = 'textFadeOut 0.3s ease-in-out forwards';
+    
+    // Menampilkan form container
+    setTimeout(function() {
+      document.body.classList.remove('intro-active');
+      document.body.classList.add('intro-complete');
+      
+      const formContainer = document.getElementById('formContainer');
+      formContainer.classList.remove('hidden');
+      
+      // Fokus ke input token
+      document.getElementById('token').focus();
+    }, 450);
+  });
+});
+</script>
+</body>
+</html>
